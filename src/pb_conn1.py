@@ -31,8 +31,7 @@ def create_db():
     conn.close()
 
 
-# postgresql_select_query = "select * from mobile where id = %s"
-# cursor.execute(postgresql_select_query, (mobile_id,))
+
 
 with psycopg2.connect(database='postgres', user=os.getenv('POSTGRES_USER'),
                       password=os.getenv('POSTGRES_PASSWORD'),
