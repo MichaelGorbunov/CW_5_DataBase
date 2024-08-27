@@ -21,9 +21,7 @@ def create_db():
                             port=os.getenv('POSTGRES_PORT'))
     cursor = conn.cursor()
     conn.autocommit = True
-    # команда для создания базы данных hh_database
 
-    # выполняем код sql
     sql_qr = f"CREATE DATABASE {db_config['dbname']}"
     cursor.execute(sql_qr)
     print("База данных успешно создана")
