@@ -19,7 +19,7 @@ def get_employers_by_name(name: str, per_page: int = 20) -> list[dict[str, Any]]
     response = requests.get(url, params=params)
     response.raise_for_status()
     employers_data = response.json()
-    print(employers_data.get("items", []))
+    # print(employers_data.get("items", []))
     return employers_data.get("items", [])
 
 
