@@ -11,7 +11,7 @@ db_config = {
     'port': os.getenv('POSTGRES_PORT'),
     'dbname': os.getenv('POSTGRES_DB')
 }
-print(db_config['dbname'])
+# print(db_config['dbname'])
 
 
 def create_db():
