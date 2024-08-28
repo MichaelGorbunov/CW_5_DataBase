@@ -28,7 +28,8 @@ def create_tables() -> None:
             CREATE TABLE IF NOT EXISTS vacancies (
                 vacancy_id SERIAL PRIMARY KEY,
                 company_id INTEGER REFERENCES companies(company_id),
-                title VARCHAR(255) NOT NULL,
+                
+                title TEXT NOT NULL,
                 salary_from INTEGER,
                 salary_to INTEGER,
                 vacancy_url TEXT
