@@ -53,7 +53,7 @@ class DBManager(DBManagerABC):
     def __del__(self):
         if self.connection:
             self.connection.close()
-            print("соединения закрыто")
+            print("база закрыта")
 
     def get_companies_and_vacancies_count(self):
         """получает список всех компаний и количество вакансий у каждой компании."""
@@ -123,7 +123,6 @@ class DBManager(DBManagerABC):
 if __name__ == "__main__":
     db_manager = DBManager()
     # vacancies = db_manager.get_vacancies_with_keyword('кран')
-
     # for item in vacancies:
     #     print("'ыаыва':", item)
 
@@ -131,12 +130,12 @@ if __name__ == "__main__":
 
     # vacancies = db_manager.get_all_vacancies()
     # for item in vacancies:
-    #     print(item)
+    #     print(*item,sep =" ** ")
 
     # vacancies = db_manager.get_companies_and_vacancies_count()
     # for item in vacancies:
-    #     print(item[0],item[1])
+    #     print(item[0], item[1])
 
     vacancies = db_manager.get_vacancies_with_higher_salary()
     for item in vacancies:
-        print(*item)
+        print(*item,sep =" ** ")
