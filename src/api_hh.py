@@ -1,5 +1,18 @@
-import requests
+import os
 from typing import Any
+
+import psycopg2
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+db_config = {
+    "user": os.getenv("POSTGRES_USER"),
+    "password": os.getenv("POSTGRES_PASSWORD"),
+    "host": os.getenv("POSTGRES_HOST"),
+    "port": os.getenv("POSTGRES_PORT"),
+    "dbname": os.getenv("POSTGRES_DB"),
+}
 
 
 def get_employers_by_name(name: str, per_page: int = 20) -> list[dict[str, Any]]:
@@ -13,7 +26,6 @@ def get_employers_by_name(name: str, per_page: int = 20) -> list[dict[str, Any]]
     params = {
         "text": name,
         "per_page": per_page,
-
     }
 
     response = requests.get(url, params=params)
@@ -22,12 +34,11 @@ def get_employers_by_name(name: str, per_page: int = 20) -> list[dict[str, Any]]
     # print(employers_data.get("items", []))
     return employers_data.get("items", [])
 
-def get_employers_info(employer_id: int) -> list[dict[str, Any]]:
-    """
 
-    """
+def get_employers_info(employer_id: int) -> list[dict[str, Any]]:
+    """ """
     url = f"https://api.hh.ru/employers/{employer_id}"
-    employer=[]
+    employer = []
 
     response = requests.get(url)
     response.raise_for_status()
@@ -36,18 +47,19 @@ def get_employers_info(employer_id: int) -> list[dict[str, Any]]:
     # print(employers_data.get("name"))
     # print(employers_data.get("site_url"))
     employer.append(
-            {
-                "company_id":employer_id,
-                "company_name":employers_data.get("name"),
-                "company_desc":employers_data.get("description"),
-                "company_url":employers_data.get("site_url")
-            })
+        {
+            "company_id": employer_id,
+            "company_name": employers_data.get("name"),
+            "company_desc": employers_data.get("description"),
+            "company_url": employers_data.get("site_url"),
+        }
+    )
     return employer
 
 
-
-
-def get_vacancies_by_employer(employer_id: int, per_page: int = 20) -> list[dict[str, Any]]:
+def get_vacancies_by_employer(
+    employer_id: int, per_page: int = 20
+) -> list[dict[str, Any]]:
     """
     Функция для получения списка вакансий работодателя с hh.ru.
     :param employer_id: ID работодателя.
@@ -60,7 +72,6 @@ def get_vacancies_by_employer(employer_id: int, per_page: int = 20) -> list[dict
         "per_page": per_page,
         "area": 113,  # Россия
         "only_with_salary": True,  # Указана зарплата
-
     }
 
     response = requests.get(url, params=params)
@@ -72,9 +83,9 @@ def get_vacancies_by_employer(employer_id: int, per_page: int = 20) -> list[dict
     for vacans in vacancies_data.get("items", []):
         vacancies.append(
             {
-                "id": int(vacans.get("id")),
+                "vacancy_id": int(vacans.get("id")),
                 "company_id": employer_id,
-                "name": vacans.get("name"),
+                "vacan_title": vacans.get("name"),
                 "city": vacans.get("area").get("name"),
                 # "salary_from": vacans.get("salary").get("from"),
                 "salary_from": (
@@ -88,13 +99,13 @@ def get_vacancies_by_employer(employer_id: int, per_page: int = 20) -> list[dict
                 #     if vacans.get("salary").get("to") is not None
                 #     else 0
                 # ),
-                "url": vacans.get("url"),
-                "requirement": (
+                "vacancy_url": vacans.get("url"),
+                "vacan_req": (
                     vacans.get("snippet").get("requirement")
                     if vacans.get("snippet").get("requirement") is not None
                     else "Не указано"
                 ),
-                "responsibility": (
+                "vacan_resp": (
                     vacans.get("snippet").get("responsibility")
                     if vacans.get("snippet").get("responsibility") is not None
                     else "Не указано"
@@ -104,7 +115,55 @@ def get_vacancies_by_employer(employer_id: int, per_page: int = 20) -> list[dict
     return vacancies
 
 
-if __name__ == '__main__':
+def insert_emp_data(emp_id:int):
+    conn = psycopg2.connect(**db_config)
+    with conn.cursor() as cur:
+
+        company = get_vacancies_by_employer(emp_id)
+        company_id = company[0].get("company_id")
+        company_name = company[0].get("company_name")
+        company_desc = company[0].get("company_desc")
+        company_url = company[0].get("company_url")
+        # print(company[0].get('company_id'))
+        # print(company_id,company_name)
+
+        # cur.execute("""
+        #                 INSERT INTO companies (company_id, company_name, company_desc,company_url)
+        #                 VALUES (%s, %s, %s, %s);
+        #             """, (company_id, company_name, company_desc,company_url))
+        cur.execute(
+            f"""MERGE INTO companies USING (VALUES({company_id})) as src(id) 
+            ON companies.company_id = src.id 
+            WHEN NOT MATCHED 
+            THEN INSERT VALUES({company_id}, '{company_name}', '{company_desc}', '{company_url}');"""
+        )
+
+    conn.commit()
+    conn.close()
+
+
+def insert_vac_data(emp_id:int):
+    conn = psycopg2.connect(**db_config)
+    with conn.cursor() as cur:
+
+        vacancy = get_vacancies_by_employer(emp_id,5)
+        for item in vacancy:
+            print(item)
+            # company_id = vacancy[0].get("company_id")
+            # company_name = vacancy[0].get("company_name")
+            # company_desc = vacancy[0].get("company_desc")
+            # company_url = vacancy[0].get("company_url")
+            # cur.execute(
+            #     f"""MERGE INTO companies USING (VALUES({company_id})) as src(id)
+            #     ON companies.company_id = src.id
+            #     WHEN NOT MATCHED
+            #     THEN INSERT VALUES({company_id}, '{company_name}', '{company_desc}', '{company_url}');"""
+            # )
+
+    conn.commit()
+    conn.close()
+
+if __name__ == "__main__":
     # main()
     # get_employers_by_name('МТС',100)
     # print(get_vacancies_by_employer(3529, 100))
@@ -112,8 +171,17 @@ if __name__ == '__main__':
 
     # for item in [6041,2227671,2748,3776,3529,78638,4233,5390761,2180,906557]:
     #     get_employers_info(item)
+
+    # for item in [6041, 2227671, 2748, 3776, 3529, 78638, 4233, 5390761, 2180, 906557]:
+    #     print(get_employers_info(item))
+    #     vacan=get_vacancies_by_employer(item,15)
+    #     for item in vacan:
+    #         print(item)
+
+    # insert_emp_data()
+
+    # for item in [6041, 2227671, 2748, 3776, 3529, 78638, 4233, 5390761, 2180, 906557]:
+    #     insert_emp_data(item)
+
     for item in [6041, 2227671, 2748, 3776, 3529, 78638, 4233, 5390761, 2180, 906557]:
-        print(get_employers_info(item))
-        vacan=get_vacancies_by_employer(item,15)
-        for item in vacan:
-            print(item)
+        insert_vac_data(item)

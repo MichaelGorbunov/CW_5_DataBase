@@ -1,7 +1,7 @@
 import os
 
-from dotenv import load_dotenv
 import psycopg2
+from dotenv import load_dotenv
 
 # from src.functions import get_repos_stats
 # from src.postgres_db import PostgresDB
@@ -9,10 +9,10 @@ import psycopg2
 load_dotenv()
 
 db_config1 = {
-    'user': os.getenv('POSTGRES_USER'),
-    'password': os.getenv('POSTGRES_PASSWORD'),
-    'host': os.getenv('POSTGRES_HOST'),
-    'port': os.getenv('POSTGRES_PORT'),
+    "user": os.getenv("POSTGRES_USER"),
+    "password": os.getenv("POSTGRES_PASSWORD"),
+    "host": os.getenv("POSTGRES_HOST"),
+    "port": os.getenv("POSTGRES_PORT"),
     # 'dbname': os.getenv('POSTGRES_DB')
 }
 
@@ -27,7 +27,7 @@ def main():
     #     print(item)
     #
     # db.export_to_json()
-    db_config1.pop('POSTGRES_DB','postgree')
+    db_config1.pop("POSTGRES_DB", "postgree")
     print(db_config1)
 
     try:
@@ -37,10 +37,8 @@ def main():
         conn.close()
     except:
         # в случае сбоя подключения будет выведено сообщение в STDOUT
-        print('Can`t establish connection to database')
+        print("Can`t establish connection to database")
 
 
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

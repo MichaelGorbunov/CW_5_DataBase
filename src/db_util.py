@@ -1,20 +1,23 @@
-import psycopg2
 import os
 
+import psycopg2
 from dotenv import load_dotenv
 
 load_dotenv()
 db_config = {
-    'user': os.getenv('POSTGRES_USER'),
-    'password': os.getenv('POSTGRES_PASSWORD'),
-    'host': os.getenv('POSTGRES_HOST'),
-    'port': os.getenv('POSTGRES_PORT'),
-    'dbname': os.getenv('POSTGRES_DB')
+    "user": os.getenv("POSTGRES_USER"),
+    "password": os.getenv("POSTGRES_PASSWORD"),
+    "host": os.getenv("POSTGRES_HOST"),
+    "port": os.getenv("POSTGRES_PORT"),
+    "dbname": os.getenv("POSTGRES_DB"),
 }
+
+
 def create_tables() -> None:
     conn = psycopg2.connect(**db_config)
     with conn.cursor() as cur:
-        cur.execute("""
+        cur.execute(
+            """
             CREATE TABLE IF NOT EXISTS companies (
                 company_id SERIAL PRIMARY KEY,
                 company_name VARCHAR NOT NULL,
@@ -22,10 +25,12 @@ def create_tables() -> None:
                 company_url TEXT                
                 --open_vacancies INTEGER
             );
-        """)
+        """
+        )
 
     with conn.cursor() as cur:
-        cur.execute("""
+        cur.execute(
+            """
             CREATE TABLE IF NOT EXISTS vacancies (
                 vacancy_id SERIAL PRIMARY KEY,
                 company_id INTEGER REFERENCES companies(company_id),
@@ -36,14 +41,20 @@ def create_tables() -> None:
                 vacan_req TEXT,
                 vacan_resp TEXT
             );
-        """)
+        """
+        )
     conn.commit()
     conn.close()
+
+
 def create_db():
-    conn = psycopg2.connect(database='postgres', user=os.getenv('POSTGRES_USER'),
-                            password=os.getenv('POSTGRES_PASSWORD'),
-                            host=os.getenv('POSTGRES_HOST'),
-                            port=os.getenv('POSTGRES_PORT'))
+    conn = psycopg2.connect(
+        database="postgres",
+        user=os.getenv("POSTGRES_USER"),
+        password=os.getenv("POSTGRES_PASSWORD"),
+        host=os.getenv("POSTGRES_HOST"),
+        port=os.getenv("POSTGRES_PORT"),
+    )
     cursor = conn.cursor()
     conn.autocommit = True
 
