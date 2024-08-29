@@ -36,7 +36,8 @@ def get_employers_by_name(name: str, per_page: int = 20) -> list[dict[str, Any]]
 
 
 def get_employers_info(employer_id: int) -> list[dict[str, Any]]:
-    """ """
+    """ Функция получения информации о работодателе
+    по его employer_id"""
     url = f"https://api.hh.ru/employers/{employer_id}"
     employer = []
 
@@ -116,6 +117,7 @@ def get_vacancies_by_employer(
 
 
 def insert_emp_data(emp_id: int):
+    """aeyrwbz """
     conn = psycopg2.connect(**db_config)
     with conn.cursor() as cur:
         company = get_employers_info(emp_id)
@@ -176,6 +178,7 @@ def insert_vac_data(emp_id: int, per_page: int):
 
 
 if __name__ == "__main__":
+    print("api_hh")
     # main()
     # get_employers_by_name('МТС',100)
     # print(get_vacancies_by_employer(3529, 100))
@@ -195,5 +198,5 @@ if __name__ == "__main__":
     # for item in [6041, 2227671, 2748, 3776, 3529, 78638, 4233, 5390761, 2180, 906557]:
     #     insert_emp_data(item)
 
-    for item in [6041, 2227671, 2748, 3776, 3529, 78638, 4233, 5390761, 2180, 906557]:
-        insert_vac_data(item, 100)
+    # for item in [6041, 2227671, 2748, 3776, 3529, 78638, 4233, 5390761, 2180, 906557]:
+    #     insert_vac_data(item, 100)

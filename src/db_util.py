@@ -15,6 +15,7 @@ db_config = {
 
 
 def create_tables() -> None:
+    """функция создания таблиц"""
     conn = psycopg2.connect(**db_config)
     with conn.cursor() as cur:
         cur.execute(
@@ -24,8 +25,7 @@ def create_tables() -> None:
                 company_name VARCHAR NOT NULL,
                 company_desc TEXT,
                 company_url TEXT                
-                --open_vacancies INTEGER
-            );
+                );
         """
         )
 
@@ -49,6 +49,7 @@ def create_tables() -> None:
 
 
 def create_db():
+    """функция создания базы данных"""
     conn = psycopg2.connect(
         database="postgres",
         user=os.getenv("POSTGRES_USER"),
@@ -66,4 +67,4 @@ def create_db():
     conn.close()
 
 
-create_tables()
+# create_tables()

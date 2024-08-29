@@ -2,43 +2,126 @@ import os
 
 import psycopg2
 from dotenv import load_dotenv
-
-# from src.functions import get_repos_stats
-# from src.postgres_db import PostgresDB
+from src.db_util import create_db,create_tables
+from src.api_hh import insert_vac_data,insert_emp_data
+from src.db_manager import DBManager
 
 load_dotenv()
 
-db_config1 = {
+db_config = {
     "user": os.getenv("POSTGRES_USER"),
     "password": os.getenv("POSTGRES_PASSWORD"),
     "host": os.getenv("POSTGRES_HOST"),
     "port": os.getenv("POSTGRES_PORT"),
-    # 'dbname': os.getenv('POSTGRES_DB')
+    "dbname": os.getenv("POSTGRES_DB")
 }
 
 
-def main():
-    # data = get_repos_stats('skypro-008')
+def check_db() -> bool:
+    """функция проверяет наличие базы данных """
+    with psycopg2.connect(
+        database="postgres",
+        user=os.getenv("POSTGRES_USER"),
+        password=os.getenv("POSTGRES_PASSWORD"),
+        host=os.getenv("POSTGRES_HOST"),
+        port=os.getenv("POSTGRES_PORT"),
+        ) as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT count(datname) FROM pg_database WHERE datname = (%s) ",
+            (db_config["dbname"],),
+        )
+        rows = cur.fetchall()
+        cur.close()
 
-    # db = PostgresDB(**db_config)
-    # db.insert_data(data)
-    #
-    # for item in db.get_data(5, 'forks'):
-    #     print(item)
-    #
-    # db.export_to_json()
-    db_config1.pop("POSTGRES_DB", "postgree")
-    print(db_config1)
 
-    try:
-        # пытаемся подключиться к базе данных
-        conn = psycopg2.connect(**db_config1)
-
+        if rows[0][0] != 1:
+            return False
+        else:
+            return True
         conn.close()
-    except:
-        # в случае сбоя подключения будет выведено сообщение в STDOUT
-        print("Can`t establish connection to database")
+
+
+
+
+
+def main():
+    db_create: bool
+    db_create = check_db()
+    if db_create is False:
+        print(f"База {os.getenv("POSTGRES_DB")} не существует")
+        create_db()
+        print(f"База {os.getenv("POSTGRES_DB")} создана")
+        create_tables()
+        print(" таблицы созданы")
+        print()
+    else:
+        print(f"База {os.getenv("POSTGRES_DB")} существует")
+        create_tables()
+
+
+    list_empl_str=os.getenv("EMP_ID_LIST").split(',')
+    for item in list_empl_str:
+        insert_emp_data(int(item))#вставка данных о работодателях
+        insert_vac_data(item, 100)#вставка данных о вакансиях
+
+    print("Данные из api.hh.ru загружены ")
+    db_manager=DBManager()
+
+    print("Вывод списка работодателей и количества вакансий в базе ")
+    m = input("Нажмите Enter для продолжения")
+    result = db_manager.get_companies_and_vacancies_count()
+    for item in result:
+        print(*item, sep=" ** ")
+
+    print("Все вакансии:")
+    m = input("Нажмите Enter для продолжения")
+    result = db_manager.get_all_vacancies() #все вакансии
+    for item in result:
+        print(*item, sep=" ** ")
+
+    print("Вычисление средней зарплаты:")
+    m = input("Нажмите Enter для продолжения")
+    result = db_manager.get_avg_salary()#Средняя зарплата
+    print(f"Средняя зарплата: {result}")
+
+    print("Список вакансий c зарплатой выше средней:")
+    m = input("Нажмите Enter для продолжения")
+    result = db_manager.get_vacancies_with_higher_salary()
+    for item in result:
+        print(*item, sep=" ** ")
+
+    print("Поиск вакансий по ключевому слову")
+    keyword=input("Введите ключевое слово : ")
+    result = db_manager.get_vacancies_with_keyword(keyword)
+
+    for item in result:
+        print(*item, sep=" ** ")
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 if __name__ == "__main__":
     main()
+
+    # print(db_config1)
+    # list_empl:list[int] = []
+    # env_list = os.getenv("EMP_ID_LIST")
+    # list_empl_str=env_list.split(',')
+    # for item in list_empl_str:
+    #     list_empl.append(int(item))
+    #
+    # print(list_empl)
+    # db_config1['dbname'] = "postgres"
+    # print(db_config1)
