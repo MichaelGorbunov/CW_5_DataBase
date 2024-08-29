@@ -16,22 +16,21 @@ def create_tables() -> None:
     with conn.cursor() as cur:
         cur.execute("""
             CREATE TABLE IF NOT EXISTS companies (
-                company_id INTEGER PRIMARY KEY,
-                company_name TEXT NOT NULL,
-                company_url TEXT
-                
+                company_id SERIAL PRIMARY KEY,
+                company_name VARCHAR(255) NOT NULL,
+                company_url TEXT,
+                open_vacancies INTEGER
             );
         """)
 
     with conn.cursor() as cur:
         cur.execute("""
             CREATE TABLE IF NOT EXISTS vacancies (
-                vacancy_id INTEGER PRIMARY KEY,
+                vacancy_id SERIAL PRIMARY KEY,
                 company_id INTEGER REFERENCES companies(company_id),
+                
                 title TEXT NOT NULL,
-                requirement TEXT,
-                responsibility TEXT,
-                salary_from INTEGER NOT NULL,
+                salary_from INTEGER,
                 salary_to INTEGER,
                 vacancy_url TEXT
             );

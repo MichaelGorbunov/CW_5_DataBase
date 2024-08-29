@@ -22,6 +22,20 @@ def get_employers_by_name(name: str, per_page: int = 20) -> list[dict[str, Any]]
     # print(employers_data.get("items", []))
     return employers_data.get("items", [])
 
+def get_employers_info(employer_id: int) -> list[dict[str, Any]]:
+    """
+
+    """
+    url = f"https://api.hh.ru/employers/{employer_id}"
+
+
+    response = requests.get(url)
+    response.raise_for_status()
+    employers_data = response.json()
+    print(employers_data.get("description"))
+    print(employers_data.get("name"))
+    print(employers_data.get("site_url"))
+
 
 
 
@@ -29,7 +43,7 @@ def get_vacancies_by_employer(employer_id: int, per_page: int = 20) -> list[dict
     """
     Функция для получения списка вакансий работодателя с hh.ru.
     :param employer_id: ID работодателя.
-    :param per_page: Количество вакансий на одной странице (по умолчанию 20).
+    :param per_page: Количество вакансий на  странице (по умолчанию 20).
     :return: Список вакансий.
     """
     url = "https://api.hh.ru/vacancies"
@@ -45,9 +59,52 @@ def get_vacancies_by_employer(employer_id: int, per_page: int = 20) -> list[dict
     response.raise_for_status()
     vacancies_data = response.json()
 
-    return vacancies_data.get("items", [])
+    # return vacancies_data.get("items", [])
+    vacancies: list = []
+    for vacans in vacancies_data.get("items", []):
+        vacancies.append(
+            {
+                "id": int(vacans.get("id")),
+                "name": vacans.get("name"),
+                "city": vacans.get("area").get("name"),
+                # "salary_from": vacans.get("salary").get("from"),
+                "salary_from": (
+                    vacans.get("salary").get("from")
+                    if vacans.get("salary").get("from") is not None
+                    else 0
+                ),
+                # "salary_to": vacans.get("salary").get("to"),
+                "salary_to": (
+                    vacans.get("salary").get("to")
+                    if vacans.get("salary").get("to") is not None
+                    else 0
+                ),
+                "url": vacans.get("url"),
+                "requirement": (
+                    vacans.get("snippet").get("requirement")
+                    if vacans.get("snippet").get("requirement") is not None
+                    else "Не указано"
+                ),
+                "responsibility": (
+                    vacans.get("snippet").get("responsibility")
+                    if vacans.get("snippet").get("responsibility") is not None
+                    else "Не указано"
+                ),
+            }
+        )
+    return vacancies
+
 
 if __name__ == '__main__':
     # main()
     # get_employers_by_name('МТС',100)
-    get_vacancies_by_employer(3529,100)
+    # print(get_vacancies_by_employer(3529, 100))
+    # print(get_employers_info(6040))
+
+    # for item in [6041,2227671,2748,3776,3529,78638,4233,5390761,2180,906557]:
+    #     get_employers_info(item)
+    for item in [6041, 2227671, 2748, 3776, 3529, 78638, 4233, 5390761, 2180, 906557]:
+        get_employers_info(item)
+        vacan=get_vacancies_by_employer(item,5)
+        for item in vacan:
+            print(item)
