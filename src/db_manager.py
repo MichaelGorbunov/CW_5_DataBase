@@ -56,10 +56,30 @@ class DBManager(DBManagerABC):
             print("соединения закрыто")
 
     def get_companies_and_vacancies_count(self):
-        pass
+        """получает список всех компаний и количество вакансий у каждой компании."""
+        with self.connection.cursor() as cur:
+            cur.execute("""
+                            SELECT companies.company_name, COUNT(*) AS count
+                            FROM companies 
+                            JOIN vacancies 
+                            ON companies.company_id=vacancies.company_id
+                            GROUP BY company_name; 
+                        """)
+            result = cur.fetchall()
+        return result
+
 
     def get_all_vacancies(self):
-        pass
+        """Получает список всех вакансий с названием компании, названия вакансии, зарплаты и ссылки на вакансию."""
+        with self.connection.cursor() as cur:
+            cur.execute("""
+                            SELECT companies.company_name, vacancies.vacan_title,
+                            vacancies.salary_from,  vacancies.vacancy_url
+                            FROM vacancies
+                            JOIN companies ON vacancies.company_id = companies.company_id;
+                        """)
+            result = cur.fetchall()
+        return result
 
     def get_avg_salary(self):
         """возвращает среднюю зарплату по вакансиям."""
@@ -93,6 +113,16 @@ class DBManager(DBManagerABC):
 if __name__ == "__main__":
     db_manager = DBManager()
     # vacancies = db_manager.get_vacancies_with_keyword('кран')
+
     # for item in vacancies:
     #     print("'ыаыва':", item)
-    print(db_manager.get_avg_salary())
+
+    # print(db_manager.get_avg_salary())
+
+    # vacancies = db_manager.get_all_vacancies()
+    # for item in vacancies:
+    #     print(item)
+
+    vacancies = db_manager.get_companies_and_vacancies_count()
+    for item in vacancies:
+        print(item[0],item[1])
