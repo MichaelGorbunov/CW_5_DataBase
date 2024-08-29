@@ -27,14 +27,22 @@ def get_employers_info(employer_id: int) -> list[dict[str, Any]]:
 
     """
     url = f"https://api.hh.ru/employers/{employer_id}"
-
+    employer=[]
 
     response = requests.get(url)
     response.raise_for_status()
     employers_data = response.json()
-    print(employers_data.get("description"))
-    print(employers_data.get("name"))
-    print(employers_data.get("site_url"))
+    # print(employers_data.get("description"))
+    # print(employers_data.get("name"))
+    # print(employers_data.get("site_url"))
+    employer.append(
+            {
+                "company_id":employer_id,
+                "company_name":employers_data.get("name"),
+                "company_desc":employers_data.get("description"),
+                "company_url":employers_data.get("site_url")
+            })
+    return employer
 
 
 
@@ -65,6 +73,7 @@ def get_vacancies_by_employer(employer_id: int, per_page: int = 20) -> list[dict
         vacancies.append(
             {
                 "id": int(vacans.get("id")),
+                "company_id": employer_id,
                 "name": vacans.get("name"),
                 "city": vacans.get("area").get("name"),
                 # "salary_from": vacans.get("salary").get("from"),
@@ -74,11 +83,11 @@ def get_vacancies_by_employer(employer_id: int, per_page: int = 20) -> list[dict
                     else 0
                 ),
                 # "salary_to": vacans.get("salary").get("to"),
-                "salary_to": (
-                    vacans.get("salary").get("to")
-                    if vacans.get("salary").get("to") is not None
-                    else 0
-                ),
+                # "salary_to": (
+                #     vacans.get("salary").get("to")
+                #     if vacans.get("salary").get("to") is not None
+                #     else 0
+                # ),
                 "url": vacans.get("url"),
                 "requirement": (
                     vacans.get("snippet").get("requirement")
@@ -104,7 +113,7 @@ if __name__ == '__main__':
     # for item in [6041,2227671,2748,3776,3529,78638,4233,5390761,2180,906557]:
     #     get_employers_info(item)
     for item in [6041, 2227671, 2748, 3776, 3529, 78638, 4233, 5390761, 2180, 906557]:
-        get_employers_info(item)
-        vacan=get_vacancies_by_employer(item,5)
+        print(get_employers_info(item))
+        vacan=get_vacancies_by_employer(item,15)
         for item in vacan:
             print(item)

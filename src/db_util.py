@@ -17,9 +17,10 @@ def create_tables() -> None:
         cur.execute("""
             CREATE TABLE IF NOT EXISTS companies (
                 company_id SERIAL PRIMARY KEY,
-                company_name VARCHAR(255) NOT NULL,
-                company_url TEXT,
-                open_vacancies INTEGER
+                company_name VARCHAR NOT NULL,
+                company_desc TEXT,
+                company_url TEXT                
+                --open_vacancies INTEGER
             );
         """)
 
@@ -28,11 +29,12 @@ def create_tables() -> None:
             CREATE TABLE IF NOT EXISTS vacancies (
                 vacancy_id SERIAL PRIMARY KEY,
                 company_id INTEGER REFERENCES companies(company_id),
-                
-                title TEXT NOT NULL,
+                vacan_title TEXT NOT NULL,
+                city VARCHAR,  
                 salary_from INTEGER,
-                salary_to INTEGER,
-                vacancy_url TEXT
+                vacancy_url TEXT,
+                vacan_req TEXT,
+                vacan_resp TEXT
             );
         """)
     conn.commit()
