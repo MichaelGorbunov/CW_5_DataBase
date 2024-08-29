@@ -99,7 +99,7 @@ def get_vacancies_by_employer(
                 #     if vacans.get("salary").get("to") is not None
                 #     else 0
                 # ),
-                "vacancy_url": vacans.get("url"),
+                "vacancy_url": vacans.get("alternate_url"),
                 "vacan_req": (
                     vacans.get("snippet").get("requirement")
                     if vacans.get("snippet").get("requirement") is not None
