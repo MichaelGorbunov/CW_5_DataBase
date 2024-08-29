@@ -117,7 +117,7 @@ def get_vacancies_by_employer(
 
 
 def insert_emp_data(emp_id: int):
-    """aeyrwbz """
+    """Функция всавки в базу информации об работодателе по emp_id  """
     conn = psycopg2.connect(**db_config)
     with conn.cursor() as cur:
         company = get_employers_info(emp_id)
@@ -137,16 +137,19 @@ def insert_emp_data(emp_id: int):
         ON companies.company_id = src.id
         WHEN NOT MATCHED
         THEN INSERT VALUES({company_id}, '{company_name}', '{company_desc}', '{company_url}');"""
-        )
+        )#предотвращение конфликтов при вставке одинаковы данных
 
     conn.commit()
     conn.close()
 
 
-def insert_vac_data(emp_id: int, per_page: int):
+def insert_vac_data(emp_id: int, count: int):
+    """функция вставки в базу данных о вакансиях
+    emp_id: id работодателя
+    count: int количество вакансий"""
     conn = psycopg2.connect(**db_config)
     with conn.cursor() as cur:
-        vacancy = get_vacancies_by_employer(emp_id, per_page)
+        vacancy = get_vacancies_by_employer(emp_id, count)
         for item in vacancy:
             vacancy_id = item.get("vacancy_id")
             company_id = item.get("company_id")

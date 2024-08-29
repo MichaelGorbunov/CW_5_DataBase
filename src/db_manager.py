@@ -31,6 +31,7 @@ class DBManagerABC(ABC):
 
 
 class DBManager(DBManagerABC):
+    """класс менеджера базы данных"""
     def __init__(self):
         load_dotenv()
         db_config = {
