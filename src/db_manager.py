@@ -91,7 +91,17 @@ class DBManager(DBManagerABC):
         return avg_salary
 
     def get_vacancies_with_higher_salary(self):
-        pass
+        """получает список всех вакансий, у которых зарплата выше средней по всем вакансиям"""
+        avg_salary = self.get_avg_salary()
+        with self.connection.cursor() as cur:
+            cur.execute(f"""
+                            SELECT companies.company_name, vacancies.vacan_title, vacancies.salary_from,
+                            vacancies.vacancy_url
+                            FROM vacancies
+                            JOIN companies ON vacancies.company_id = companies.company_id
+                            WHERE vacancies.salary_from > {avg_salary};""")
+            result = cur.fetchall()
+        return result
 
     def get_vacancies_with_keyword(self, keyword:str):
         with self.connection.cursor() as cur:
@@ -123,6 +133,10 @@ if __name__ == "__main__":
     # for item in vacancies:
     #     print(item)
 
-    vacancies = db_manager.get_companies_and_vacancies_count()
+    # vacancies = db_manager.get_companies_and_vacancies_count()
+    # for item in vacancies:
+    #     print(item[0],item[1])
+
+    vacancies = db_manager.get_vacancies_with_higher_salary()
     for item in vacancies:
-        print(item[0],item[1])
+        print(*item)
