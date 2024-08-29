@@ -1,9 +1,9 @@
+import os
 from abc import ABC, abstractmethod
 from typing import Any, List, Tuple
-import os
+
 import psycopg2
 from dotenv import load_dotenv
-
 
 
 class DBManagerABC(ABC):
@@ -30,10 +30,6 @@ class DBManagerABC(ABC):
         pass
 
 
-
-
-
-
 class DBManager(DBManagerABC):
     def __init__(self):
         load_dotenv()
@@ -58,35 +54,40 @@ class DBManager(DBManagerABC):
     def get_companies_and_vacancies_count(self):
         """получает список всех компаний и количество вакансий у каждой компании."""
         with self.connection.cursor() as cur:
-            cur.execute("""
+            cur.execute(
+                """
                             SELECT companies.company_name, COUNT(*) AS count
                             FROM companies 
                             JOIN vacancies 
                             ON companies.company_id=vacancies.company_id
                             GROUP BY company_name; 
-                        """)
+                        """
+            )
             result = cur.fetchall()
         return result
-
 
     def get_all_vacancies(self):
         """Получает список всех вакансий с названием компании, названия вакансии, зарплаты и ссылки на вакансию."""
         with self.connection.cursor() as cur:
-            cur.execute("""
+            cur.execute(
+                """
                             SELECT companies.company_name, vacancies.vacan_title,
                             vacancies.salary_from,  vacancies.vacancy_url
                             FROM vacancies
                             JOIN companies ON vacancies.company_id = companies.company_id;
-                        """)
+                        """
+            )
             result = cur.fetchall()
         return result
 
     def get_avg_salary(self):
         """возвращает среднюю зарплату по вакансиям."""
         with self.connection.cursor() as cur:
-            cur.execute("""
+            cur.execute(
+                """
                             SELECT AVG(salary_from) FROM vacancies;
-                        """)
+                        """
+            )
             avg_salary = round(cur.fetchone()[0])
         return avg_salary
 
@@ -94,19 +95,22 @@ class DBManager(DBManagerABC):
         """получает список всех вакансий, у которых зарплата выше средней по всем вакансиям"""
         avg_salary = self.get_avg_salary()
         with self.connection.cursor() as cur:
-            cur.execute(f"""
+            cur.execute(
+                f"""
                             SELECT companies.company_name, vacancies.vacan_title, vacancies.salary_from,
                             vacancies.vacancy_url
                             FROM vacancies
                             JOIN companies ON vacancies.company_id = companies.company_id
-                            WHERE vacancies.salary_from > {avg_salary};""")
+                            WHERE vacancies.salary_from > {avg_salary};"""
+            )
             result = cur.fetchall()
         return result
 
-    def get_vacancies_with_keyword(self, keyword:str):
+    def get_vacancies_with_keyword(self, keyword: str):
         with self.connection.cursor() as cur:
             search_pattern = f"%{keyword.lower()}%"
-            cur.execute(f"""
+            cur.execute(
+                f"""
                 SELECT companies.company_name, vacancies.vacan_title,
                 vacancies.salary_from,vacancies.vacancy_url
                 FROM vacancies
@@ -115,7 +119,8 @@ class DBManager(DBManagerABC):
                 LOWER(vacancies.vacan_req) LIKE '{search_pattern}' OR
                 LOWER(vacancies.vacan_resp) LIKE '{search_pattern}'
                 ;
-            """)
+            """
+            )
             result = cur.fetchall()
         return result
 
@@ -138,4 +143,4 @@ if __name__ == "__main__":
 
     vacancies = db_manager.get_vacancies_with_higher_salary()
     for item in vacancies:
-        print(*item,sep =" ** ")
+        print(*item, sep=" ** ")

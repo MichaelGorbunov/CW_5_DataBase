@@ -1,5 +1,5 @@
 import os
-from typing import Any
+from typing import Any, List, Tuple
 
 import psycopg2
 import requests
@@ -58,7 +58,7 @@ def get_employers_info(employer_id: int) -> list[dict[str, Any]]:
 
 
 def get_vacancies_by_employer(
-        employer_id: int, per_page: int = 20
+    employer_id: int, per_page: int = 20
 ) -> list[dict[str, Any]]:
     """
     Функция для получения списка вакансий работодателя с hh.ru.
@@ -131,10 +131,10 @@ def insert_emp_data(emp_id: int):
         #                 VALUES (%s, %s, %s, %s);
         #             """, (company_id, company_name, company_desc,company_url))
         cur.execute(
-            f"""MERGE INTO companies USING (VALUES({company_id})) as src(id) 
-            ON companies.company_id = src.id 
-            WHEN NOT MATCHED 
-            THEN INSERT VALUES({company_id}, '{company_name}', '{company_desc}', '{company_url}');"""
+            f"""MERGE INTO companies USING (VALUES({company_id})) as src(id)
+        ON companies.company_id = src.id
+        WHEN NOT MATCHED
+        THEN INSERT VALUES({company_id}, '{company_name}', '{company_desc}', '{company_url}');"""
         )
 
     conn.commit()
@@ -196,4 +196,4 @@ if __name__ == "__main__":
     #     insert_emp_data(item)
 
     for item in [6041, 2227671, 2748, 3776, 3529, 78638, 4233, 5390761, 2180, 906557]:
-        insert_vac_data(item,100)
+        insert_vac_data(item, 100)

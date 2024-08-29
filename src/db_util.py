@@ -1,4 +1,5 @@
 import os
+from typing import Any, List, Tuple
 
 import psycopg2
 from dotenv import load_dotenv
