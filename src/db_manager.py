@@ -62,7 +62,13 @@ class DBManager(DBManagerABC):
         pass
 
     def get_avg_salary(self):
-        pass
+        """возвращает среднюю зарплату по вакансиям."""
+        with self.connection.cursor() as cur:
+            cur.execute("""
+                            SELECT AVG(salary_from) FROM vacancies;
+                        """)
+            avg_salary = round(cur.fetchone()[0])
+        return avg_salary
 
     def get_vacancies_with_higher_salary(self):
         pass
@@ -86,6 +92,7 @@ class DBManager(DBManagerABC):
 
 if __name__ == "__main__":
     db_manager = DBManager()
-    vacancies = db_manager.get_vacancies_with_keyword('кран')
-    for item in vacancies:
-        print("'ыаыва':", item)
+    # vacancies = db_manager.get_vacancies_with_keyword('кран')
+    # for item in vacancies:
+    #     print("'ыаыва':", item)
+    print(db_manager.get_avg_salary())
