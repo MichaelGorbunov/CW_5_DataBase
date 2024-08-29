@@ -58,7 +58,7 @@ def get_employers_info(employer_id: int) -> list[dict[str, Any]]:
 
 
 def get_vacancies_by_employer(
-    employer_id: int, per_page: int = 20
+        employer_id: int, per_page: int = 20
 ) -> list[dict[str, Any]]:
     """
     Функция для получения списка вакансий работодателя с hh.ru.
@@ -115,11 +115,10 @@ def get_vacancies_by_employer(
     return vacancies
 
 
-def insert_emp_data(emp_id:int):
+def insert_emp_data(emp_id: int):
     conn = psycopg2.connect(**db_config)
     with conn.cursor() as cur:
-
-        company = get_vacancies_by_employer(emp_id)
+        company = get_employers_info(emp_id)
         company_id = company[0].get("company_id")
         company_name = company[0].get("company_name")
         company_desc = company[0].get("company_desc")
@@ -142,13 +141,11 @@ def insert_emp_data(emp_id:int):
     conn.close()
 
 
-def insert_vac_data(emp_id:int):
+def insert_vac_data(emp_id: int, per_page: int):
     conn = psycopg2.connect(**db_config)
     with conn.cursor() as cur:
-
-        vacancy = get_vacancies_by_employer(emp_id,5)
+        vacancy = get_vacancies_by_employer(emp_id, per_page)
         for item in vacancy:
-
             vacancy_id = item.get("vacancy_id")
             company_id = item.get("company_id")
             vacan_title = item.get("vacan_title")
@@ -177,6 +174,7 @@ def insert_vac_data(emp_id:int):
     conn.commit()
     conn.close()
 
+
 if __name__ == "__main__":
     # main()
     # get_employers_by_name('МТС',100)
@@ -198,4 +196,4 @@ if __name__ == "__main__":
     #     insert_emp_data(item)
 
     for item in [6041, 2227671, 2748, 3776, 3529, 78638, 4233, 5390761, 2180, 906557]:
-        insert_vac_data(item)
+        insert_vac_data(item,100)
