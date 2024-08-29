@@ -127,7 +127,8 @@ class DBManager(DBManagerABC):
 
 
 if __name__ == "__main__":
-    db_manager = DBManager()
+    print("db_manager")
+    # db_manager = DBManager()
     # vacancies = db_manager.get_vacancies_with_keyword('кран')
     # for item in vacancies:
     #     print("'ыаыва':", item)
@@ -142,6 +143,6 @@ if __name__ == "__main__":
     # for item in vacancies:
     #     print(item[0], item[1])
 
-    vacancies = db_manager.get_vacancies_with_higher_salary()
-    for item in vacancies:
-        print(*item, sep=" ** ")
+    # vacancies = db_manager.get_vacancies_with_higher_salary()
+    # for item in vacancies:
+    #     print(*item, sep=" ** ")
