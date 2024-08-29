@@ -148,17 +148,31 @@ def insert_vac_data(emp_id:int):
 
         vacancy = get_vacancies_by_employer(emp_id,5)
         for item in vacancy:
-            print(item)
-            # company_id = vacancy[0].get("company_id")
-            # company_name = vacancy[0].get("company_name")
-            # company_desc = vacancy[0].get("company_desc")
-            # company_url = vacancy[0].get("company_url")
-            # cur.execute(
-            #     f"""MERGE INTO companies USING (VALUES({company_id})) as src(id)
-            #     ON companies.company_id = src.id
-            #     WHEN NOT MATCHED
-            #     THEN INSERT VALUES({company_id}, '{company_name}', '{company_desc}', '{company_url}');"""
-            # )
+
+            vacancy_id = item.get("vacancy_id")
+            company_id = item.get("company_id")
+            vacan_title = item.get("vacan_title")
+            city = item.get("city")
+            salary_from = item.get("salary_from")
+            vacancy_url = item.get("vacancy_url")
+            vacan_req = item.get("vacan_req")
+            vacan_resp = item.get("vacan_resp")
+            # print(vacancy_id,
+            #     company_id,
+            #     vacan_title,
+            #     city ,
+            #     salary_from,
+            #     vacancy_url,
+            #     vacan_req,
+            #     vacan_resp)
+
+            cur.execute(
+                f"""MERGE INTO vacancies USING (VALUES({vacancy_id})) as src(id)
+                ON vacancies.vacancy_id = src.id
+                WHEN NOT MATCHED
+                THEN INSERT VALUES({vacancy_id}, {company_id}, '{vacan_title}', '{city}', 
+                {salary_from}, '{vacancy_url}', '{vacan_req}', '{vacan_resp}');"""
+            )
 
     conn.commit()
     conn.close()
