@@ -1,7 +1,9 @@
 # import os
 # import time
 from typing import Any
+
 import requests
+
 # start_time = time.time()
 
 
@@ -30,7 +32,6 @@ def get_employers_info(employer_id: int) -> list[dict[str, Any]]:
     по его employer_id"""
     url = f"https://api.hh.ru/employers/{employer_id}"
     employer = []
-
     response = requests.get(url)
     response.raise_for_status()
     employers_data = response.json()
@@ -74,7 +75,6 @@ def get_vacancies_by_employer(
         if response.status_code != 200:
             session.close()
             return vacancies
-
 
         vacancies_data = response.json()
 

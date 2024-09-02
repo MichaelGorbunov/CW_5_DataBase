@@ -13,7 +13,6 @@ requests = "^2.32.3"
 python-dotenv = "^1.0.1"
 types-psycopg2 = "^2.9.21.20240819"
 types-requests = "^2.32.0.20240712"
-aiohttp = "^3.10.5"
 
 
 [tool.poetry.group.lint.dependencies]
