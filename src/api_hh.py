@@ -1,5 +1,6 @@
 import os
 from typing import Any, List, Tuple
+import time
 
 import psycopg2
 import requests
@@ -14,7 +15,7 @@ db_config = {
     "dbname": os.getenv("POSTGRES_DB"),
 }
 
-
+start_time = time.time()
 def get_employers_by_name(name: str, per_page: int = 20) -> list[dict[str, Any]]:
     """
     Функция для получения списка работодателей по имени с hh.ru.
@@ -73,47 +74,63 @@ def get_vacancies_by_employer(
         "per_page": per_page,
         "area": 113,  # Россия
         "only_with_salary": True,  # Указана зарплата
+        'page': 0
     }
-
-    response = requests.get(url, params=params)
-    response.raise_for_status()
-    vacancies_data = response.json()
-
-    # return vacancies_data.get("items", [])
     vacancies: list = []
-    for vacans in vacancies_data.get("items", []):
-        vacancies.append(
-            {
-                "vacancy_id": int(vacans.get("id")),
-                "company_id": employer_id,
-                "vacan_title": vacans.get("name"),
-                "city": vacans.get("area").get("name"),
-                # "salary_from": vacans.get("salary").get("from"),
-                "salary_from": (
-                    vacans.get("salary").get("from")
-                    if vacans.get("salary").get("from") is not None
-                    else 0
-                ),
-                # "salary_to": vacans.get("salary").get("to"),
-                # "salary_to": (
-                #     vacans.get("salary").get("to")
-                #     if vacans.get("salary").get("to") is not None
-                #     else 0
-                # ),
-                "vacancy_url": vacans.get("alternate_url"),
-                "vacan_req": (
-                    vacans.get("snippet").get("requirement")
-                    if vacans.get("snippet").get("requirement") is not None
-                    else "Не указано"
-                ),
-                "vacan_resp": (
-                    vacans.get("snippet").get("responsibility")
-                    if vacans.get("snippet").get("responsibility") is not None
-                    else "Не указано"
-                ),
-            }
-        )
+    session=requests.session()
+
+    for page in range(19):
+        params['page']= page
+        # print(page)
+        # response = requests.get(url, params=params)
+        response = session.get(url, params=params)
+        # print(response.status_code)
+        if response.status_code !=200:
+            session.close()
+            return vacancies
+        response.raise_for_status()
+        # print(params)
+        vacancies_data = response.json()
+        # print(vacancies_data)
+        for vacans in vacancies_data.get("items", []):
+            vacancies.append(
+                {
+                    "vacancy_id": int(vacans.get("id")),
+                    "company_id": employer_id,
+                    "vacan_title": vacans.get("name"),
+                    "city": vacans.get("area").get("name"),
+                    # "salary_from": vacans.get("salary").get("from"),
+                    "salary_from": (
+                        vacans.get("salary").get("from")
+                        if vacans.get("salary").get("from") is not None
+                        else 0
+                    ),
+                    # "salary_to": vacans.get("salary").get("to"),
+                    # "salary_to": (
+                    #     vacans.get("salary").get("to")
+                    #     if vacans.get("salary").get("to") is not None
+                    #     else 0
+                    # ),
+                    "vacancy_url": vacans.get("alternate_url"),
+                    "vacan_req": (
+                        vacans.get("snippet").get("requirement")
+                        if vacans.get("snippet").get("requirement") is not None
+                        else "Не указано"
+                    ),
+                    "vacan_resp": (
+                        vacans.get("snippet").get("responsibility")
+                        if vacans.get("snippet").get("responsibility") is not None
+                        else "Не указано"
+                    ),
+                }
+            )
+
+        if vacancies_data.get("page") == vacancies_data.get("pages"):
+            session.close()
+            return vacancies
+    session.close()
     return vacancies
+
 
 
 def insert_emp_data(emp_id: int):
@@ -150,6 +167,11 @@ def insert_vac_data(emp_id: int, count: int):
     conn = psycopg2.connect(**db_config)
     with conn.cursor() as cur:
         vacancy = get_vacancies_by_employer(emp_id, count)
+        # print(vacancy)
+        if vacancy is None:
+            print("err get_vacancies_by_employer ")
+
+
         for item in vacancy:
             vacancy_id = item.get("vacancy_id")
             company_id = item.get("company_id")
@@ -168,13 +190,18 @@ def insert_vac_data(emp_id: int, count: int):
             #     vacan_req,
             #     vacan_resp)
 
+            # cur.execute(
+            #     f"""MERGE INTO vacancies USING (VALUES({vacancy_id})) as src(id)
+            #     ON vacancies.vacancy_id = src.id
+            #     WHEN NOT MATCHED
+            #     THEN INSERT VALUES({vacancy_id}, {company_id}, '{vacan_title}', '{city}',
+            #     {salary_from}, '{vacancy_url}', '{vacan_req}', '{vacan_resp}');"""
+            # )
             cur.execute(
-                f"""MERGE INTO vacancies USING (VALUES({vacancy_id})) as src(id)
-                ON vacancies.vacancy_id = src.id
-                WHEN NOT MATCHED
-                THEN INSERT VALUES({vacancy_id}, {company_id}, '{vacan_title}', '{city}', 
-                {salary_from}, '{vacancy_url}', '{vacan_req}', '{vacan_resp}');"""
-            )
+                f"""
+            INSERT     INTO vacancies(vacancy_id, company_id,vacan_title,city,salary_from,vacancy_url,vacan_req,vacan_resp) 
+            VALUES({vacancy_id}, {company_id}, '{vacan_title}', '{city}',{salary_from}, '{vacancy_url}', '{vacan_req}', '{vacan_resp}')
+            ON CONFLICT(vacancy_id)DO NOTHING;""")
 
     conn.commit()
     conn.close()
@@ -184,7 +211,11 @@ if __name__ == "__main__":
     print("api_hh")
     # main()
     # get_employers_by_name('МТС',100)
-    # print(get_vacancies_by_employer(3529, 100))
+    # for item in [6041,3776]:
+    #     vacan = get_vacancies_by_employer(item, 100)
+    #     for item in vacan:
+    #         print(item)
+    # print("--- %s seconds ---" % (time.time() - start_time))
     # print(get_employers_info(6040))
 
     # for item in [6041,2227671,2748,3776,3529,78638,4233,5390761,2180,906557]:
