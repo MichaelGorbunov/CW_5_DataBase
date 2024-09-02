@@ -1,21 +1,12 @@
 import os
-from typing import Any, List, Tuple
+from typing import Any
 import time
 
-import psycopg2
-import requests
-from dotenv import load_dotenv
 
-load_dotenv()
-db_config = {
-    "user": os.getenv("POSTGRES_USER"),
-    "password": os.getenv("POSTGRES_PASSWORD"),
-    "host": os.getenv("POSTGRES_HOST"),
-    "port": os.getenv("POSTGRES_PORT"),
-    "dbname": os.getenv("POSTGRES_DB"),
-}
+import requests
 
 start_time = time.time()
+
 def get_employers_by_name(name: str, per_page: int = 20) -> list[dict[str, Any]]:
     """
     Функция для получения списка работодателей по имени с hh.ru.
@@ -45,9 +36,6 @@ def get_employers_info(employer_id: int) -> list[dict[str, Any]]:
     response = requests.get(url)
     response.raise_for_status()
     employers_data = response.json()
-    # print(employers_data.get("description"))
-    # print(employers_data.get("name"))
-    # print(employers_data.get("site_url"))
     employer.append(
         {
             "company_id": employer_id,
@@ -77,6 +65,7 @@ def get_vacancies_by_employer(
         'page': 0
     }
     vacancies: list = []
+
     session=requests.session()
 
     for page in range(19):
@@ -133,78 +122,10 @@ def get_vacancies_by_employer(
 
 
 
-def insert_emp_data(emp_id: int):
-    """Функция всавки в базу информации об работодателе по emp_id  """
-    conn = psycopg2.connect(**db_config)
-    with conn.cursor() as cur:
-        company = get_employers_info(emp_id)
-        company_id = company[0].get("company_id")
-        company_name = company[0].get("company_name")
-        company_desc = company[0].get("company_desc")
-        company_url = company[0].get("company_url")
-        # print(company[0].get('company_id'))
-        # print(company_id,company_name)
-
-        # cur.execute("""
-        #                 INSERT INTO companies (company_id, company_name, company_desc,company_url)
-        #                 VALUES (%s, %s, %s, %s);
-        #             """, (company_id, company_name, company_desc,company_url))
-        cur.execute(
-            f"""MERGE INTO companies USING (VALUES({company_id})) as src(id)
-        ON companies.company_id = src.id
-        WHEN NOT MATCHED
-        THEN INSERT VALUES({company_id}, '{company_name}', '{company_desc}', '{company_url}');"""
-        )#предотвращение конфликтов при вставке одинаковы данных
-
-    conn.commit()
-    conn.close()
 
 
-def insert_vac_data(emp_id: int, count: int):
-    """функция вставки в базу данных о вакансиях
-    emp_id: id работодателя
-    count: int количество вакансий"""
-    conn = psycopg2.connect(**db_config)
-    with conn.cursor() as cur:
-        vacancy = get_vacancies_by_employer(emp_id, count)
-        # print(vacancy)
-        if vacancy is None:
-            print("err get_vacancies_by_employer ")
 
 
-        for item in vacancy:
-            vacancy_id = item.get("vacancy_id")
-            company_id = item.get("company_id")
-            vacan_title = item.get("vacan_title")
-            city = item.get("city")
-            salary_from = item.get("salary_from")
-            vacancy_url = item.get("vacancy_url")
-            vacan_req = item.get("vacan_req")
-            vacan_resp = item.get("vacan_resp")
-            # print(vacancy_id,
-            #     company_id,
-            #     vacan_title,
-            #     city ,
-            #     salary_from,
-            #     vacancy_url,
-            #     vacan_req,
-            #     vacan_resp)
-
-            # cur.execute(
-            #     f"""MERGE INTO vacancies USING (VALUES({vacancy_id})) as src(id)
-            #     ON vacancies.vacancy_id = src.id
-            #     WHEN NOT MATCHED
-            #     THEN INSERT VALUES({vacancy_id}, {company_id}, '{vacan_title}', '{city}',
-            #     {salary_from}, '{vacancy_url}', '{vacan_req}', '{vacan_resp}');"""
-            # )
-            cur.execute(
-                f"""
-            INSERT     INTO vacancies(vacancy_id, company_id,vacan_title,city,salary_from,vacancy_url,vacan_req,vacan_resp) 
-            VALUES({vacancy_id}, {company_id}, '{vacan_title}', '{city}',{salary_from}, '{vacancy_url}', '{vacan_req}', '{vacan_resp}')
-            ON CONFLICT(vacancy_id)DO NOTHING;""")
-
-    conn.commit()
-    conn.close()
 
 
 if __name__ == "__main__":

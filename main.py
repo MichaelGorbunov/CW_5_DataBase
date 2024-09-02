@@ -3,48 +3,13 @@ import time
 
 import psycopg2
 from dotenv import load_dotenv
-from src.db_util import create_db,create_tables
-from src.api_hh import insert_vac_data,insert_emp_data
+from src.db_util import create_db, create_tables, check_db, insert_vac_data, insert_emp_data
+
 from src.db_manager import DBManager
+
 start_time = time.time()
 
 load_dotenv()
-
-db_config = {
-    "user": os.getenv("POSTGRES_USER"),
-    "password": os.getenv("POSTGRES_PASSWORD"),
-    "host": os.getenv("POSTGRES_HOST"),
-    "port": os.getenv("POSTGRES_PORT"),
-    "dbname": os.getenv("POSTGRES_DB")
-}
-
-
-def check_db() -> bool:
-    """функция проверяет наличие базы данных """
-    with psycopg2.connect(
-        database="postgres",
-        user=os.getenv("POSTGRES_USER"),
-        password=os.getenv("POSTGRES_PASSWORD"),
-        host=os.getenv("POSTGRES_HOST"),
-        port=os.getenv("POSTGRES_PORT"),
-        ) as conn:
-        cur = conn.cursor()
-        cur.execute(
-            "SELECT count(datname) FROM pg_database WHERE datname = (%s) ",
-            (db_config["dbname"],),
-        )
-        rows = cur.fetchall()
-        cur.close()
-
-
-        if rows[0][0] != 1:
-            return False
-        else:
-            return True
-        conn.close()
-
-
-
 
 
 def main():
@@ -61,14 +26,13 @@ def main():
         print(f"База {os.getenv("POSTGRES_DB")} существует")
         create_tables()
 
-
-    list_empl_str=os.getenv("EMP_ID_LIST").split(',')
+    list_empl_str = os.getenv("EMP_ID_LIST").split(',')
     for item in list_empl_str:
-        insert_emp_data(int(item))#вставка данных о работодателях
-        insert_vac_data(item, 100)#вставка данных о вакансиях
+        insert_emp_data(int(item))  # вставка данных о работодателях
+        insert_vac_data(item, 100)  # вставка данных о вакансиях
 
     print("Данные из api.hh.ru загружены ")
-    db_manager=DBManager()
+    db_manager = DBManager()
 
     print("Вывод списка работодателей и количества вакансий в базе ")
     print("--- %s seconds ---" % (time.time() - start_time))
@@ -100,10 +64,10 @@ def main():
     #
     # for item in result:
     #     print(*item, sep=" ** ")
+
+
 if __name__ == "__main__":
     main()
-
-
 
     # print(db_config1)
     # list_empl:list[int] = []
