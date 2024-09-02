@@ -1,11 +1,9 @@
-import os
+# import os
+# import time
 from typing import Any
-import time
-
-
 import requests
+# start_time = time.time()
 
-start_time = time.time()
 
 def get_employers_by_name(name: str, per_page: int = 20) -> list[dict[str, Any]]:
     """
@@ -28,7 +26,7 @@ def get_employers_by_name(name: str, per_page: int = 20) -> list[dict[str, Any]]
 
 
 def get_employers_info(employer_id: int) -> list[dict[str, Any]]:
-    """ Функция получения информации о работодателе
+    """Функция получения информации о работодателе
     по его employer_id"""
     url = f"https://api.hh.ru/employers/{employer_id}"
     employer = []
@@ -62,25 +60,23 @@ def get_vacancies_by_employer(
         "per_page": per_page,
         "area": 113,  # Россия
         "only_with_salary": True,  # Указана зарплата
-        'page': 0
+        "page": 0,
     }
     vacancies: list = []
 
-    session=requests.session()
+    session = requests.session()
 
     for page in range(19):
-        params['page']= page
-        # print(page)
-        # response = requests.get(url, params=params)
+        params["page"] = page
         response = session.get(url, params=params)
-        # print(response.status_code)
-        if response.status_code !=200:
+
+        if response.status_code != 200:
             session.close()
             return vacancies
         response.raise_for_status()
-        # print(params)
+
         vacancies_data = response.json()
-        # print(vacancies_data)
+
         for vacans in vacancies_data.get("items", []):
             vacancies.append(
                 {
@@ -119,13 +115,6 @@ def get_vacancies_by_employer(
             return vacancies
     session.close()
     return vacancies
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":

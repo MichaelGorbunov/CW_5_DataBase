@@ -3,7 +3,8 @@ from typing import Any, List, Tuple
 
 import psycopg2
 from dotenv import load_dotenv
-from src.api_hh import get_employers_info,get_vacancies_by_employer
+
+from src.api_hh import get_employers_info, get_vacancies_by_employer
 
 load_dotenv()
 db_config = {
@@ -68,8 +69,9 @@ def create_db():
     cursor.close()
     conn.close()
 
+
 def check_db() -> bool:
-    """функция проверяет наличие базы данных """
+    """функция проверяет наличие базы данных"""
     with psycopg2.connect(**db_config_first_conn) as conn:
         cur = conn.cursor()
         cur.execute(
@@ -79,15 +81,15 @@ def check_db() -> bool:
         rows = cur.fetchall()
         cur.close()
 
-
         if rows[0][0] != 1:
             return False
         else:
             return True
         conn.close()
 
+
 def insert_emp_data(emp_id: int):
-    """Функция всавки в базу информации об работодателе по emp_id  """
+    """Функция всавки в базу информации об работодателе по emp_id"""
     conn = psycopg2.connect(**db_config)
     with conn.cursor() as cur:
         company = get_employers_info(emp_id)
@@ -107,10 +109,11 @@ def insert_emp_data(emp_id: int):
         ON companies.company_id = src.id
         WHEN NOT MATCHED
         THEN INSERT VALUES({company_id}, '{company_name}', '{company_desc}', '{company_url}');"""
-        )#предотвращение конфликтов при вставке одинаковых данных
+        )  # предотвращение конфликтов при вставке одинаковых данных
 
     conn.commit()
     conn.close()
+
 
 def insert_vac_data(emp_id: int, count: int):
     """функция вставки в базу данных о вакансиях
@@ -122,7 +125,6 @@ def insert_vac_data(emp_id: int, count: int):
         # print(vacancy)
         if vacancy is None:
             print("err get_vacancies_by_employer ")
-
 
         for item in vacancy:
             vacancy_id = item.get("vacancy_id")
@@ -145,9 +147,11 @@ def insert_vac_data(emp_id: int, count: int):
                 f"""
             INSERT     INTO vacancies(vacancy_id, company_id,vacan_title,city,salary_from,vacancy_url,vacan_req,vacan_resp) 
             VALUES({vacancy_id}, {company_id}, '{vacan_title}', '{city}',{salary_from}, '{vacancy_url}', '{vacan_req}', '{vacan_resp}')
-            ON CONFLICT(vacancy_id)DO NOTHING;""")
+            ON CONFLICT(vacancy_id)DO NOTHING;"""
+            )
 
     conn.commit()
     conn.close()
+
 
 # create_tables()

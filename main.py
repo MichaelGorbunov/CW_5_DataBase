@@ -3,9 +3,10 @@ import time
 
 import psycopg2
 from dotenv import load_dotenv
-from src.db_util import create_db, create_tables, check_db, insert_vac_data, insert_emp_data
 
 from src.db_manager import DBManager
+from src.db_util import (check_db, create_db, create_tables, insert_emp_data,
+                         insert_vac_data)
 
 start_time = time.time()
 
@@ -26,7 +27,7 @@ def main():
         print(f"База {os.getenv("POSTGRES_DB")} существует")
         create_tables()
 
-    list_empl_str = os.getenv("EMP_ID_LIST").split(',')
+    list_empl_str = os.getenv("EMP_ID_LIST").split(",")
     for item in list_empl_str:
         insert_emp_data(int(item))  # вставка данных о работодателях
         insert_vac_data(item, 100)  # вставка данных о вакансиях
