@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from src.db_manager import DBManager
 from src.db_util import (check_db, create_db, create_tables, insert_emp_data,
                          insert_vac_data)
+from src.api_hh import get_vacancies_by_employer,get_employers_info
 
 start_time = time.time()
 
@@ -29,8 +30,11 @@ def main():
 
     list_empl_str = os.getenv("EMP_ID_LIST").split(",")
     for item in list_empl_str:
-        insert_emp_data(int(item))  # вставка данных о работодателях
-        insert_vac_data(item, 100)  # вставка данных о вакансиях
+        # insert_emp_data(int(item))  # вставка данных о работодателях
+        # insert_vac_data(item, 100)  # вставка данных о вакансиях
+        get_employers_info(int(item))
+        get_vacancies_by_employer(int(item))
+
 
     print("Данные из api.hh.ru загружены ")
     db_manager = DBManager()

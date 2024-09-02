@@ -5,11 +5,11 @@ import requests
 # start_time = time.time()
 
 
-def get_employers_by_name(name: str, per_page: int = 20) -> list[dict[str, Any]]:
+def get_employers_by_name(name: str, per_page: int = 100) -> list[dict[str, Any]]:
     """
     Функция для получения списка работодателей по имени с hh.ru.
     :param name: Имя работодателя для поиска.
-    :param per_page: Количество работодателей на одной странице (по умолчанию 20).
+    :param per_page: Количество работодателей на одной странице (по умолчанию 100).
     :return: Список работодателей.
     """
     url = "https://api.hh.ru/employers"
@@ -46,12 +46,12 @@ def get_employers_info(employer_id: int) -> list[dict[str, Any]]:
 
 
 def get_vacancies_by_employer(
-    employer_id: int, per_page: int = 20
+    employer_id: int, per_page: int = 100
 ) -> list[dict[str, Any]]:
     """
     Функция для получения списка вакансий работодателя с hh.ru.
     :param employer_id: ID работодателя.
-    :param per_page: Количество вакансий на  странице (по умолчанию 20).
+    :param per_page: Количество вакансий на  странице (по умолчанию 100).
     :return: Список вакансий.
     """
     url = "https://api.hh.ru/vacancies"
@@ -66,14 +66,15 @@ def get_vacancies_by_employer(
 
     session = requests.session()
 
-    for page in range(19):
+    for page in range(20):
         params["page"] = page
         response = session.get(url, params=params)
+        response.raise_for_status()
 
         if response.status_code != 200:
             session.close()
             return vacancies
-        response.raise_for_status()
+
 
         vacancies_data = response.json()
 
